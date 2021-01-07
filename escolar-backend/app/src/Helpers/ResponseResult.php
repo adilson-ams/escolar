@@ -23,6 +23,13 @@ class ResponseResult {
         return $response;
     }
 
+    public function notAuthorization($message = null)
+    {
+        $response['status_code_header'] = 'HTTP/1.1 401 Not Authorization';
+        $response['body'] = $message;
+        return $response;
+    }
+
     public function notFoundResponse($message = null)
     {
         $response['status_code_header'] = 'HTTP/1.1 404 Not Found';

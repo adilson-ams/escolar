@@ -59,7 +59,6 @@ $statement = <<<EOS
      )
     ENGINE=InnoDB
 
-
     
     CREATE TABLE turma (
         id INT auto_increment NOT NULL,
@@ -71,6 +70,18 @@ $statement = <<<EOS
         PRIMARY KEY (id)
      )
     ENGINE=InnoDB
+
+    
+    CREATE TABLE usuario (
+        idusuario INT auto_increment NOT NULL,
+        email varchar(100) NULL,
+        senha varchar(255) NULL,
+        dtcadastro DATETIME NOT NULL,
+        dtatual DATETIME NOT NULL,
+        PRIMARY KEY (idusuario)
+    )
+    ENGINE=InnoDB
+    
         
 
 EOS;

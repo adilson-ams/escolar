@@ -4,15 +4,15 @@ OBJETIVOS
 
 #QUARTA 
 [] - Iniciar frontend
-[] - Versionalizar vários repositorios em 1
-[] - Enviar perguntas
+[x] - Versionalizar vários repositorios em 1
+[x] - Enviar perguntas
 [] - Iniciar documentação
-[] 	- Estrutura de projeto
+[x] 	- Estrutura de projeto
  
 
 #QUINTA
 [] - Adicionar 
-[] 	- autenticação
+[x] 	- autenticação
 [] 	- imagem
 [] 	- logs
 [] 	- Testes
