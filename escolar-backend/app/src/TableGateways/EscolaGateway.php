@@ -18,7 +18,7 @@ class EscolaGateway {
     {
         $statement = "
             SELECT 
-                id, nome, logradouro, bairro, numero, cep, cidade, uf, situacao, dtcadastro, dtatual
+                idescola, nome, logradouro, bairro, numero, cep, cidade, uf, situacao, dtcadastro, dtatual
             FROM 
                 escola;
         ";
@@ -36,16 +36,16 @@ class EscolaGateway {
     {
         $statement = "
             SELECT 
-                id, nome, logradouro, bairro, numero, cep, cidade, uf, situacao, dtcadastro, dtatual
+                idescola, nome, logradouro, bairro, numero, cep, cidade, uf, situacao, dtcadastro, dtatual
             FROM
                 escola
-            WHERE id = ?;
+            WHERE idescola = ?;
         ";
 
         try {
             $statement = $this->db->prepare($statement);
             $statement->execute(array($id));
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $statement->fetch(\PDO::FETCH_ASSOC);
             return $result;
         } catch (\PDOException $e) {
             exit($e->getMessage());
@@ -60,6 +60,7 @@ class EscolaGateway {
             VALUES
                 (:nome, :logradouro, :bairro, :numero, :cep, :cidade, :uf, :situacao, :dtcadastro, :dtatual);
         ";
+
 
         try {
             $statement = $this->db->prepare($statement);
@@ -84,7 +85,7 @@ class EscolaGateway {
         }    
     }
 
-    public function update($id, Array $input)
+    public function update($idescola, Array $input)
     {
         $statement = "
             UPDATE escola
@@ -98,13 +99,13 @@ class EscolaGateway {
                 uf = :uf,
                 situacao = :situacao,
                 dtatual = :dtatual
-            WHERE id = :id;
+            WHERE idescola = :id;
         ";
 
         try {
             $statement = $this->db->prepare($statement);
             $array = array(
-                'id' => (int) $id,
+                'id' => (int) $idescola,
                 'nome' => $input['nome'],
                 'logradouro'  => $input['logradouro'],
                 'bairro' => $input['bairro'] ?? null,
@@ -127,8 +128,9 @@ class EscolaGateway {
     public function delete($id)
     {
         $statement = "
-            DELETE FROM escola
-            WHERE id = :id;
+            DELETE FROM 
+                escola
+            WHERE idescola = :id;
         ";
 
         try {

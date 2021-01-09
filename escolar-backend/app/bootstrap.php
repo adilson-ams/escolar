@@ -10,6 +10,13 @@ $dotenv->load();
 $dbConnection = (new DatabaseConnector())->getConnection();
 
 
+// Routes
+
+$routes["usuarios"] = 'Usuarios';
+$routes["escolas"] = 'Escolas';
+$routes["alunos"] = 'Alunos';
+$routes["turmas"] = 'Turmas';
+
 
 function base64UrlEncode($text)
 {

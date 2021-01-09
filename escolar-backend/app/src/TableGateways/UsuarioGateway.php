@@ -18,7 +18,7 @@ class UsuarioGateway {
     {
         $statement = "
             SELECT 
-                idusuario, email
+                idusuario, nome, email, sobre
             FROM 
                 usuario;
         ";
@@ -36,7 +36,7 @@ class UsuarioGateway {
     { 
         $statement = "
             SELECT 
-                idusuario, email
+                idusuario, nome, email, sobre
             FROM
                 usuario
             WHERE 
@@ -46,7 +46,7 @@ class UsuarioGateway {
         try {
             $statement = $this->db->prepare($statement);
             $statement->execute(array($id));
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $statement->fetch(\PDO::FETCH_ASSOC);
             return $result;
         } catch (\PDOException $e) {
             exit($e->getMessage());
@@ -58,7 +58,7 @@ class UsuarioGateway {
     {
         $statement = "
             SELECT 
-                idusuario, email
+                idusuario, nome, email, sobre
             FROM
                 usuario
             WHERE 
@@ -74,7 +74,7 @@ class UsuarioGateway {
             ]); 
 
             $statement->execute( $array ) or die(print_r($statement->errorInfo(), true));
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $statement->fetch(\PDO::FETCH_ASSOC);
             return $result;
 
         } catch (\PDOException $e) {
@@ -87,16 +87,18 @@ class UsuarioGateway {
     {
         $statement = "
             INSERT INTO usuario
-                ( email, senha, dtcadastro, dtatual )
+                ( nome, email, senha, sobre, dtcadastro, dtatual )
             VALUES
-                ( :email, :senha, :dtcadastro, :dtatual );
+                ( :nome, :email, :senha, :sobre, :dtcadastro, :dtatual );
         ";
 
         try {
             $statement = $this->db->prepare($statement);
 
             $array = array(
+                'nome'         => $input['nome'],
                 'email'         => $input['email'],
+                'sobre'         => $input['sobre'],
                 'senha'         => $input['senha'],
                 'dtcadastro'    => date("Y-m-d H:i:s"),
                 'dtatual'       => date("Y-m-d H:i:s")
@@ -114,21 +116,24 @@ class UsuarioGateway {
         $statement = "
             UPDATE usuario
             SET 
+                nome = :nome,
                 email = :email,
-                senha = :senha,
+                sobre = :sobre,
                 dtatual = :dtatual
-            WHERE id = :id;
+            WHERE 
+                idusuario = :idusuario ;
         ";
 
         try {
             $statement = $this->db->prepare($statement);
             $array = array(
-                'id' => (int) $id,
+                'idusuario' => $id,
+                'nome'         => $input['nome'],
                 'email'         => $input['email'],
-                'senha'         => $input['senha'],
+                'sobre'         => $input['sobre'],
                 'dtatual'       => date("Y-m-d H:i:s")
             );
-
+            
             $statement->execute( $array ) or die(print_r($statement->errorInfo(), true));
 
             return $statement->rowCount();

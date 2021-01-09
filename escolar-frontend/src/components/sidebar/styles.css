@@ -1,0 +1,17 @@
+
+.sidebar{
+    background-color: #343a40;
+    height: 100vh;
+    color: #ffffff;
+    padding: 0;
+    padding-top: 50px;
+}
+
+.sidebar p {
+    padding-left: 20px;
+}
+
+
+.sidebar .nav {
+    padding-left: 20px;
+}

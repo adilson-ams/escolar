@@ -1,33 +1,38 @@
 <?php
 namespace Src\Controller;
 
-use Src\TableGateways\AlunoGateway;
+use Src\TableGateways\UsuarioGateway;
 use Src\Helpers\ResponseResult;
+use Src\Helpers\Authenticate;
 
-class AlunoController {
+class UsuariosController {
 
     private $db;
     private $requestMethod;
     private $userId;
 
-    private $AlunoGateway;
+    private $UsuarioGateway;
     private $responseResult;
+    private $Authenticate;
 
+  
     public function __construct($db, $requestMethod, $userId)
     {
         $this->db = $db;
         $this->requestMethod = $requestMethod;
         $this->userId = $userId;
 
-        $this->AlunoGateway = new AlunoGateway($db);
+        $this->UsuarioGateway = new UsuarioGateway($db);
         $this->responseResult = new ResponseResult();
+        $this->Authenticate = new Authenticate();
     }
+    
 
     public function processRequest()
     { 
         switch ($this->requestMethod) {
-            
-            # caso seja informado um identificador, é chamada a action que retorna dados da Aluno por id
+ 
+            # caso seja informado um identificador, é chamada a action que retorna dados da Usuario por id
             # caso contrário, serão listados todos os registros
             case 'GET':
                 if ($this->userId) {
@@ -39,7 +44,11 @@ class AlunoController {
             
             // Sempre que executada uma chamada via "Post", será interpretado como uma tentativa de inserção
             case 'POST':
-                $response = $this->createFromRequest();
+                if( $this->userId === 'login'){
+                    $response = $this->login();
+                }else{
+                    $response = $this->createFromRequest();
+                }
                 break;
             case 'PUT':
                 $response = $this->updateFromRequest($this->userId);
@@ -62,18 +71,31 @@ class AlunoController {
     # GET
     private function getAll()
     {
-        $result = $this->AlunoGateway->findAll();
+        // Necessário autênticação
+        $auth = $this->Authenticate->Authorization();
+        if( !$auth["status"] ) {
+            return $this->responseResult->notAuthorization( json_encode( $auth )); 
+        }
+
+
+        $result = $this->UsuarioGateway->findAll();
 
         // retorna todos os resultados #200 - OK response
         return $this->responseResult->okResponse( json_encode( $result ) ); 
     }
 
 
-    # busca Aluno específica, de acordo com o id
+    # busca Usuario específica, de acordo com o id
     # GET
     private function getById($id)
     {
-        $result = $this->AlunoGateway->find($id);
+        // Necessário autênticação
+        $auth = $this->Authenticate->Authorization();
+        if( !$auth["status"] ) {
+            return $this->responseResult->notAuthorization( json_encode( $auth )); 
+        }
+
+        $result = $this->UsuarioGateway->find($id);
 
         // Caso identificador não seja encontrado no banco de dados
         if (! $result) {
@@ -90,25 +112,65 @@ class AlunoController {
     }
 
 
+    #POST
+    private function login()
+    {
+        $input = (array) json_decode(file_get_contents('php://input'), TRUE);
+
+
+        $input["senha"] = md5( $input["senha"] );
+
+        $result = $this->UsuarioGateway->login($input);
+
+        if (! $result) {
+            $message = json_encode([
+                'status' => false,
+                'message' => 'usuário e/ou senha não conferem.'
+            ]);
+
+             
+            return $this->responseResult->okResponse($message);
+        }
+
+
+        $token = $this->Authenticate->generationToken( $input["email"] );
+        
+        $message = json_encode([
+            "status" => true,
+            "token" => $token,
+            "result" => $result
+        ]); 
+
+        return $this->responseResult->okResponse( $message ); 
+    }
+
     # POST
     private function createFromRequest()
     { 
+        // Necessário autênticação
+        $auth = $this->Authenticate->Authorization();
+        if( !$auth["status"] ) {
+            return $this->responseResult->notAuthorization( json_encode( $auth )); 
+        }
+
         $input = (array) json_decode(file_get_contents('php://input'), TRUE);
         
         // Executa método de validação de campos
-        if (! $this->validateAluno($input)) {
+        if (! $this->validateUsuario($input)) {
             $message = json_encode([
                 'message' => "Exitem campos obrigatórios que não foram informados."
             ]);
             return $this->responseResult->unprocessableEntityResponse($message);
         }
 
+        $input["senha"] = md5( $input["senha"] );
+        
         // Insere no banco de dados
-        $this->AlunoGateway->insert($input);
+        $this->UsuarioGateway->insert($input);
 
         // retorna sucesso ao criar novo registro no banco de dados
         $message = json_encode([
-            "message" => "Aluno cadastrado com sucesso!"
+            "message" => "Usuario cadastrado com sucesso!"
         ]);
         return $this->responseResult->okResponseCreated($message);
     }
@@ -118,18 +180,17 @@ class AlunoController {
     # PUT
     private function updateFromRequest($id)
     {
-        // Recupera todos os dados informados como "raw", no body da chamada "Rest", e adiciona na variável input como array.
-        $input = (array) json_decode(file_get_contents('php://input'), TRUE);
-
-        if($id !== $input['id']){
-            $message = json_encode([
-                'message' => 'Registro não confere.'
-            ]);
-            return $this->responseResult->notFoundResponse($message);
+        // Necessário autênticação
+        $auth = $this->Authenticate->Authorization();
+        if( !$auth["status"] ) {
+            return $this->responseResult->notAuthorization( json_encode( $auth )); 
         }
 
-        // Busca Aluno no banco de dados
-        $result = $this->AlunoGateway->find($id);
+        // Recupera todos os dados informados como "raw", no body da chamada "Rest", e adiciona na variável input como array.
+        $input = (array) json_decode(file_get_contents('php://input'), TRUE);
+  
+        // Busca Usuario no banco de dados
+        $result = $this->UsuarioGateway->find($id);
 
         // caso não seja encontrado, retorna mensagem.
         if (! $result) {
@@ -140,50 +201,74 @@ class AlunoController {
         }
 
         // Executa método de validação de campos
-        if (! $this->validateAluno($input)) {
+        if (! $this->validateUsuarioPut($input)) {
             $message = json_encode([
-                'message' => "Exitem campos obrigatórios para alterar esta Aluno que não foram informados."
+                'message' => "Exitem campos obrigatórios para alterar esta Usuario que não foram informados."
             ]);
             return $this->responseResult->unprocessableEntityResponse( $message );
         }
 
         // altera registro no banco de dados
-        $this->AlunoGateway->update($id, $input);
+        $this->UsuarioGateway->update($id, $input);
         
         // retorna sucesso e registros alterados
         $response = json_encode([
-            'message' => 'Registro de Aluno alterado com sucesso.',
+            'status' => true,
+            'message' => 'Registro de Usuario alterado com sucesso.',
             "result" => $result
         ]);
+
         return $this->responseResult->okResponse( $response );
     }
 
     # DELETE
     private function delete($id)
     {
-        $result = $this->AlunoGateway->find($id);
+        // Necessário autênticação
+        $auth = $this->Authenticate->Authorization();
+        if( !$auth["status"] ) {
+            return $this->responseResult->notAuthorization( json_encode( $auth )); 
+        }
+
+        $result = $this->UsuarioGateway->find( (int) $id);
         if (! $result) {
             $message = json_encode([
-                'message' => 'Impossível excluir registro. Aluno não encontrado.'
+                'message' => 'Impossível excluir registro. Usuario não encontrado.'
             ]);
             return $this->responseResult->notFoundResponse($message);
         }
 
-        $this->AlunoGateway->delete($id);
+        $this->UsuarioGateway->delete( (int) $id);
         
         // retorna mensagem de sucesso ap excluir registro.
         $response = json_encode([
-            'message' => 'Registro de Aluno excluído com sucesso.'
+            'message' => 'Registro de Usuario excluído com sucesso.'
         ]);
         return $this->responseResult->okResponse( $response );
     }
 
 
-    private function validateAluno($input)
+    private function validateUsuario($input)
     {
         if (! isset($input['nome'])) {
             return false;
         }
+        if (! isset($input['senha'])) {
+            return false;
+        }
+        if (! isset($input['email'])) {
+            return false;
+        }
+        return true;
+    }
+
+
+
+    private function validateUsuarioPut($input)
+    {
+        if (! isset($input['nome'])) {
+            return false;
+        } 
         if (! isset($input['email'])) {
             return false;
         }

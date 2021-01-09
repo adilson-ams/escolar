@@ -17,17 +17,22 @@ class TurmaGateway {
     public function findAll()
     {
         $statement = "
-            SELECT
-                id, descricao, ano, nivel,  
-                CASE nivel 
+            SELECT 
+                t.idturma, 
+                t.descricao,
+                t.ano,
+                t.nivel, 
+                CASE t.nivel 
                     WHEN 1 THEN '1 - Ensino fundamental' 
                     WHEN 2 THEN '2 - Ensino médio'
                 END as NivelDescricao,
-                serie, 
-                turno, 
-                idescola
-            FROM 
-                turma;
+                t.serie, 
+                t.turno, 
+                t.idescola,
+                e.nome as escola
+            FROM
+                turma t
+                INNER JOIN escola e ON e.idescola = t.idescola 
         ";
 
         try {
@@ -43,23 +48,29 @@ class TurmaGateway {
     {
         $statement = "
             SELECT 
-                id, descricao, 
-                ano,
-                nivel, 
-                CASE nivel 
-                    WHEN 1 THEN '1 - Ensino fundamental' 
-                    WHEN 2 THEN '2 - Ensino médio'
-                END as NivelDescricao,
-                serie, turno, idescola
-            FROM
-                turma
-            WHERE id = ?;
+                    t.idturma, 
+                    t.descricao,
+                    t.ano,
+                    t.nivel, 
+                    CASE t.nivel 
+                        WHEN 1 THEN '1 - Ensino fundamental' 
+                        WHEN 2 THEN '2 - Ensino médio'
+                    END as NivelDescricao,
+                    t.serie, 
+                    t.turno, 
+                    t.idescola,
+                    e.nome as escola
+                FROM
+                    turma t
+                    INNER JOIN escola e ON e.idescola = t.idescola 
+                WHERE 
+                    t.idturma = ?;
         ";
 
         try {
             $statement = $this->db->prepare($statement);
             $statement->execute(array($id));
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $statement->fetch(\PDO::FETCH_ASSOC);
             return $result;
         } catch (\PDOException $e) {
             exit($e->getMessage());
@@ -106,10 +117,9 @@ class TurmaGateway {
                 nivel = :nivel,
                 serie = :serie,
                 turno = :turno,
-                idescola = :idescola,
                 dtatual = :dtatual
             WHERE 
-                id = :id;
+            idturma = :id;
         ";
 
         try {
@@ -122,7 +132,6 @@ class TurmaGateway {
                 'nivel' => $input['nivel'],
                 'serie' => $input['serie'],
                 'turno' => $input['turno'],
-                'idescola' => $input['idescola'],
                 'dtatual' => date("Y-m-d H:i:s")
             );
 
@@ -139,7 +148,7 @@ class TurmaGateway {
         $statement = "
             DELETE FROM 
                 turma
-            WHERE id = :id;
+            WHERE idturma = :id;
         ";
 
         try {

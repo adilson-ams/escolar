@@ -1,19 +1,17 @@
 <?php
 namespace Src\Controller;
 
-use Src\TableGateways\UsuarioGateway;
+use Src\TableGateways\TurmaGateway;
 use Src\Helpers\ResponseResult;
-use Src\Helpers\Authenticate;
 
-class UsuarioController {
+class TurmasController {
 
     private $db;
     private $requestMethod;
     private $userId;
 
-    private $UsuarioGateway;
+    private $TurmaGateway;
     private $responseResult;
-    private $Authenticate;
 
     public function __construct($db, $requestMethod, $userId)
     {
@@ -21,16 +19,16 @@ class UsuarioController {
         $this->requestMethod = $requestMethod;
         $this->userId = $userId;
 
-        $this->UsuarioGateway = new UsuarioGateway($db);
+        $this->TurmaGateway = new TurmaGateway($db);
         $this->responseResult = new ResponseResult();
-        $this->Authenticate = new Authenticate();
     }
 
     public function processRequest()
     { 
         switch ($this->requestMethod) {
- 
-            # caso seja informado um identificador, é chamada a action que retorna dados da Usuario por id
+
+            
+            # caso seja informado um identificador, é chamada a action que retorna dados da pessoa por id
             # caso contrário, serão listados todos os registros
             case 'GET':
                 if ($this->userId) {
@@ -42,11 +40,7 @@ class UsuarioController {
             
             // Sempre que executada uma chamada via "Post", será interpretado como uma tentativa de inserção
             case 'POST':
-                if( $this->userId === 'login'){
-                    $response = $this->login();
-                }else{
-                    $response = $this->createFromRequest();
-                }
+                $response = $this->createFromRequest();
                 break;
             case 'PUT':
                 $response = $this->updateFromRequest($this->userId);
@@ -69,31 +63,18 @@ class UsuarioController {
     # GET
     private function getAll()
     {
-        // Necessário autênticação
-        $auth = $this->Authenticate->Authorization();
-        if( !$auth["status"] ) {
-            return $this->responseResult->notAuthorization( json_encode( $auth )); 
-        }
-
-
-        $result = $this->UsuarioGateway->findAll();
+        $result = $this->TurmaGateway->findAll();
 
         // retorna todos os resultados #200 - OK response
         return $this->responseResult->okResponse( json_encode( $result ) ); 
     }
 
 
-    # busca Usuario específica, de acordo com o id
+    # busca pessoa específica, de acordo com o id
     # GET
     private function getById($id)
     {
-        // Necessário autênticação
-        $auth = $this->Authenticate->Authorization();
-        if( !$auth["status"] ) {
-            return $this->responseResult->notAuthorization( json_encode( $auth )); 
-        }
-
-        $result = $this->UsuarioGateway->find($id);
+        $result = $this->TurmaGateway->find($id);
 
         // Caso identificador não seja encontrado no banco de dados
         if (! $result) {
@@ -110,62 +91,26 @@ class UsuarioController {
     }
 
 
-    #POST
-    private function login()
-    {
-        $input = (array) json_decode(file_get_contents('php://input'), TRUE);
-
-
-        $input["senha"] = md5( $input["senha"] );
-
-        $result = $this->UsuarioGateway->login($input);
-
-        if (! $result) {
-            $message = json_encode([
-                'message' => 'usuário e/ou senha não conferem.'
-            ]);
-
-            # 404 - Não encontrado
-            return $this->responseResult->notFoundResponse($message);
-        }
-
-
-        $token = $this->Authenticate->generationToken( $input["email"] );
-        
-        $message = json_encode([
-            "token" => $token
-        ]); 
-
-        return $this->responseResult->okResponse( $message ); 
-    }
-
     # POST
     private function createFromRequest()
     { 
-        // Necessário autênticação
-        $auth = $this->Authenticate->Authorization();
-        if( !$auth["status"] ) {
-            return $this->responseResult->notAuthorization( json_encode( $auth )); 
-        }
-
         $input = (array) json_decode(file_get_contents('php://input'), TRUE);
         
         // Executa método de validação de campos
-        if (! $this->validateUsuario($input)) {
+        if (! $this->validateTurma($input)) {
             $message = json_encode([
                 'message' => "Exitem campos obrigatórios que não foram informados."
             ]);
             return $this->responseResult->unprocessableEntityResponse($message);
         }
 
-        $input["senha"] = md5( $input["senha"] );
-        
         // Insere no banco de dados
-        $this->UsuarioGateway->insert($input);
+        $this->TurmaGateway->insert($input);
 
         // retorna sucesso ao criar novo registro no banco de dados
         $message = json_encode([
-            "message" => "Usuario cadastrado com sucesso!"
+            'status' => true,
+            "message" => "Turma cadastrada com sucesso!"
         ]);
         return $this->responseResult->okResponseCreated($message);
     }
@@ -175,47 +120,46 @@ class UsuarioController {
     # PUT
     private function updateFromRequest($id)
     {
-        // Necessário autênticação
-        $auth = $this->Authenticate->Authorization();
-        if( !$auth["status"] ) {
-            return $this->responseResult->notAuthorization( json_encode( $auth )); 
-        }
-
         // Recupera todos os dados informados como "raw", no body da chamada "Rest", e adiciona na variável input como array.
         $input = (array) json_decode(file_get_contents('php://input'), TRUE);
 
-        if($id !== $input['id']){
+        if((int) $id !== (int) $input['idturma']){
             $message = json_encode([
+                'status' => false,
                 'message' => 'Registro não confere.'
             ]);
             return $this->responseResult->notFoundResponse($message);
         }
 
-        // Busca Usuario no banco de dados
-        $result = $this->UsuarioGateway->find($id);
+
+        // Busca pessoa no banco de dados
+        $result = $this->TurmaGateway->find($id);
 
         // caso não seja encontrado, retorna mensagem.
         if (! $result) {
             $message = json_encode([
+                'status' => false,
                 'message' => 'Registro não encontrado.'
             ]);
             return $this->responseResult->notFoundResponse( $message );
         }
 
         // Executa método de validação de campos
-        if (! $this->validateUsuario($input)) {
+        if ( !$this->validateTurmaUpdate($input)) {
             $message = json_encode([
-                'message' => "Exitem campos obrigatórios para alterar esta Usuario que não foram informados."
+                'status' => false,
+                'message' => "Exitem campos obrigatórios para alterar esta pessoa que não foram informados."
             ]);
             return $this->responseResult->unprocessableEntityResponse( $message );
         }
 
         // altera registro no banco de dados
-        $this->UsuarioGateway->update($id, $input);
+        $this->TurmaGateway->update( $id, $input );
         
         // retorna sucesso e registros alterados
         $response = json_encode([
-            'message' => 'Registro de Usuario alterado com sucesso.',
+            'status' => true,
+            'message' => 'Registro de Pessoa alterado com sucesso.',
             "result" => $result
         ]);
         return $this->responseResult->okResponse( $response );
@@ -224,39 +168,65 @@ class UsuarioController {
     # DELETE
     private function delete($id)
     {
-        // Necessário autênticação
-        $auth = $this->Authenticate->Authorization();
-        if( !$auth["status"] ) {
-            return $this->responseResult->notAuthorization( json_encode( $auth )); 
-        }
-
-        $result = $this->UsuarioGateway->find( (int) $id);
+        $result = $this->TurmaGateway->find($id);
         if (! $result) {
             $message = json_encode([
-                'message' => 'Impossível excluir registro. Usuario não encontrado.'
+                'status' => false,
+                'message' => 'Impossível excluir registro. Pessoa não encontrada.'
             ]);
             return $this->responseResult->notFoundResponse($message);
         }
 
-        $this->UsuarioGateway->delete( (int) $id);
+        $this->TurmaGateway->delete($id);
         
         // retorna mensagem de sucesso ap excluir registro.
         $response = json_encode([
-            'message' => 'Registro de Usuario excluído com sucesso.'
+            'status' => true,
+            'message' => 'Registro de Pessoa excluído com sucesso.'
         ]);
         return $this->responseResult->okResponse( $response );
     }
 
 
-    private function validateUsuario($input)
+    private function validateTurma($input)
     {
-        if (! isset($input['senha'])) {
+        if (! isset($input['ano'])) {
             return false;
         }
-        if (! isset($input['email'])) {
+        if (! isset($input['nivel'])) {
             return false;
         }
+        if (! isset($input['serie'])) {
+            return false;
+        }
+        if (! isset($input['turno'])) {
+            return false;
+        }
+        if (! isset($input['idescola'])) {
+            return false;
+        }
+
         return true;
     }
+
+
+    private function validateTurmaUpdate($input)
+    {
+        if (! isset($input['ano'])) {
+            return false;
+        }
+        if (! isset($input['nivel'])) {
+            return false;
+        }
+        if (! isset($input['serie'])) {
+            return false;
+        }
+        if (! isset($input['turno'])) {
+            return false;
+        } 
+
+        return true;
+    }
+
 
 }

@@ -18,7 +18,7 @@ class AlunoGateway {
     {
         $statement = "
             SELECT 
-                id, nome, telefone, email, dtnascimento, genero, dtcadastro, dtatual
+                idaluno, nome, telefone, email, dtnascimento, genero, dtcadastro, dtatual
             FROM 
                 aluno;
         ";
@@ -36,17 +36,17 @@ class AlunoGateway {
     {
         $statement = "
             SELECT 
-                id, nome, telefone, email, dtnascimento, genero, dtcadastro, dtatual
+                idaluno, nome, telefone, email, dtnascimento, genero, dtcadastro, dtatual
             FROM
                 aluno
             WHERE 
-                id = ?;
+                idaluno = ?;
         ";
 
         try {
             $statement = $this->db->prepare($statement);
             $statement->execute(array($id));
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+            $result = $statement->fetch(\PDO::FETCH_ASSOC);
             return $result;
         } catch (\PDOException $e) {
             exit($e->getMessage());
@@ -93,7 +93,8 @@ class AlunoGateway {
                 dtnascimento = :dtnascimento,
                 genero = :genero,
                 dtatual = :dtatual
-            WHERE id = :id;
+            WHERE 
+            idaluno = :id;
         ";
 
         try {
@@ -121,7 +122,8 @@ class AlunoGateway {
         $statement = "
             DELETE FROM 
                 aluno
-            WHERE id = :id;
+            WHERE 
+                idaluno = :id;
         ";
 
         try {

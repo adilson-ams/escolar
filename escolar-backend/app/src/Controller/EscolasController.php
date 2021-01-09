@@ -1,16 +1,16 @@
 <?php
 namespace Src\Controller;
 
-use Src\TableGateways\TurmaGateway;
+use Src\TableGateways\EscolaGateway;
 use Src\Helpers\ResponseResult;
 
-class TurmaController {
+class EscolasController {
 
     private $db;
     private $requestMethod;
     private $userId;
 
-    private $TurmaGateway;
+    private $EscolaGateway;
     private $responseResult;
 
     public function __construct($db, $requestMethod, $userId)
@@ -19,15 +19,15 @@ class TurmaController {
         $this->requestMethod = $requestMethod;
         $this->userId = $userId;
 
-        $this->TurmaGateway = new TurmaGateway($db);
+        $this->EscolaGateway = new EscolaGateway($db);
         $this->responseResult = new ResponseResult();
     }
 
     public function processRequest()
     { 
+
         switch ($this->requestMethod) {
 
-            
             # caso seja informado um identificador, é chamada a action que retorna dados da pessoa por id
             # caso contrário, serão listados todos os registros
             case 'GET':
@@ -63,7 +63,7 @@ class TurmaController {
     # GET
     private function getAll()
     {
-        $result = $this->TurmaGateway->findAll();
+        $result = $this->EscolaGateway->findAll();
 
         // retorna todos os resultados #200 - OK response
         return $this->responseResult->okResponse( json_encode( $result ) ); 
@@ -74,7 +74,7 @@ class TurmaController {
     # GET
     private function getById($id)
     {
-        $result = $this->TurmaGateway->find($id);
+        $result = $this->EscolaGateway->find($id);
 
         // Caso identificador não seja encontrado no banco de dados
         if (! $result) {
@@ -97,19 +97,21 @@ class TurmaController {
         $input = (array) json_decode(file_get_contents('php://input'), TRUE);
         
         // Executa método de validação de campos
-        if (! $this->validateTurma($input)) {
+        if (! $this->validateEscola($input)) {
             $message = json_encode([
+                "status" => false,
                 'message' => "Exitem campos obrigatórios que não foram informados."
             ]);
             return $this->responseResult->unprocessableEntityResponse($message);
         }
 
         // Insere no banco de dados
-        $this->TurmaGateway->insert($input);
+        $this->EscolaGateway->insert($input);
 
         // retorna sucesso ao criar novo registro no banco de dados
         $message = json_encode([
-            "message" => "Turma cadastrada com sucesso!"
+            "status" => true,
+            "message" => "Escola cadastrada com sucesso!"
         ]);
         return $this->responseResult->okResponseCreated($message);
     }
@@ -122,38 +124,41 @@ class TurmaController {
         // Recupera todos os dados informados como "raw", no body da chamada "Rest", e adiciona na variável input como array.
         $input = (array) json_decode(file_get_contents('php://input'), TRUE);
 
-        if($id !== $input['id']){
+        if((int) $id !== (int) $input['idescola']){
             $message = json_encode([
+                "status" => false,
                 'message' => 'Registro não confere.'
             ]);
             return $this->responseResult->notFoundResponse($message);
         }
 
-
         // Busca pessoa no banco de dados
-        $result = $this->TurmaGateway->find($id);
+        $result = $this->EscolaGateway->find($id);
 
         // caso não seja encontrado, retorna mensagem.
         if (! $result) {
             $message = json_encode([
+                "status" => false,
                 'message' => 'Registro não encontrado.'
             ]);
             return $this->responseResult->notFoundResponse( $message );
         }
 
         // Executa método de validação de campos
-        if (! $this->validateTurma($input)) {
+        if (! $this->validateEscola($input)) {
             $message = json_encode([
+                "status" => false,
                 'message' => "Exitem campos obrigatórios para alterar esta pessoa que não foram informados."
             ]);
             return $this->responseResult->unprocessableEntityResponse( $message );
         }
 
         // altera registro no banco de dados
-        $this->TurmaGateway->update( $id, $input );
+        $this->EscolaGateway->update($id, $input);
         
         // retorna sucesso e registros alterados
         $response = json_encode([
+            "status" => true,
             'message' => 'Registro de Pessoa alterado com sucesso.',
             "result" => $result
         ]);
@@ -163,42 +168,34 @@ class TurmaController {
     # DELETE
     private function delete($id)
     {
-        $result = $this->TurmaGateway->find($id);
+        $result = $this->EscolaGateway->find($id);
         if (! $result) {
             $message = json_encode([
+                "status" => false,
                 'message' => 'Impossível excluir registro. Pessoa não encontrada.'
             ]);
             return $this->responseResult->notFoundResponse($message);
         }
 
-        $this->TurmaGateway->delete($id);
+        $this->EscolaGateway->delete($id);
         
         // retorna mensagem de sucesso ap excluir registro.
         $response = json_encode([
+            "status" => true,
             'message' => 'Registro de Pessoa excluído com sucesso.'
         ]);
         return $this->responseResult->okResponse( $response );
     }
 
 
-    private function validateTurma($input)
+    private function validateEscola($input)
     {
-        if (! isset($input['ano'])) {
+        if (! isset($input['nome'])) {
             return false;
         }
-        if (! isset($input['nivel'])) {
+        if (! isset($input['situacao'])) {
             return false;
         }
-        if (! isset($input['serie'])) {
-            return false;
-        }
-        if (! isset($input['turno'])) {
-            return false;
-        }
-        if (! isset($input['idescola'])) {
-            return false;
-        }
-
         return true;
     }
 

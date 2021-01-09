@@ -37,7 +37,7 @@ class ResponseResult {
         return $response;
     }
     
-    private function unprocessableEntityResponse($message = null)
+    public function unprocessableEntityResponse($message = null)
     {
         $response['status_code_header'] = 'HTTP/1.1 422 Unprocessable Entity';
         $response['body'] = $message;
