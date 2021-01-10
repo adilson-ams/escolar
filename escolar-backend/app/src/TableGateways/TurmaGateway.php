@@ -14,31 +14,68 @@ class TurmaGateway {
         $this->db = $db;
     }
 
-    public function findAll()
+    public function findAll($params)
     {
-        $statement = "
-            SELECT 
-                t.idturma, 
-                t.descricao,
-                t.ano,
-                t.nivel, 
-                CASE t.nivel 
-                    WHEN 1 THEN '1 - Ensino fundamental' 
-                    WHEN 2 THEN '2 - Ensino médio'
-                END as NivelDescricao,
-                t.serie, 
-                t.turno, 
-                t.idescola,
-                e.nome as escola
-            FROM
-                turma t
-                INNER JOIN escola e ON e.idescola = t.idescola 
-        ";
-
         try {
+
+            $statement = "
+                    SELECT 
+                        count(*) as count
+                    FROM
+                        turma
+                ";
+    
+            // filtros
+            if( $params['$filter'] ){
+                $statement .= " WHERE " . $params['$filter'];
+            }
+            
+            $statement = $this->db->query($statement);
+            $result = $statement->fetch(\PDO::FETCH_ASSOC);
+            $total = $result["count"]; 
+ 
+            $statement = " 
+                    SELECT 
+                        idturma, 
+                        descricao,
+                        ano,
+                        nivel, 
+                        CASE nivel 
+                            WHEN 1 THEN '1 - Ensino fundamental' 
+                            WHEN 2 THEN '2 - Ensino médio'
+                        END as NivelDescricao,
+                        serie, 
+                        turno, 
+                        idescola
+                    FROM
+                        turma
+            ";
+
+            // filtros
+            if( $params['$filter'] ){
+                $statement .= " WHERE " . $params['$filter'];
+            }
+
+            // ordernacao
+            if( $params['$orderby'] ){
+                $statement .= " ORDER BY " . $params['$orderby'];
+            }
+
+            // paginacao
+            if( $params['$top'] ){
+                
+                $statement .= " LIMIT " ;
+                
+                if($params['$skip']){
+                    $statement .= $params['$skip'] . ",";
+                }
+                $statement .= $params['$top'];
+            }
+ 
+
             $statement = $this->db->query($statement);
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
-            return $result;
+            return array( "values" => $result, "@odata.count" => $total ); 
         } catch (\PDOException $e) {
             exit($e->getMessage());
         }

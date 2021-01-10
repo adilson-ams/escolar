@@ -5,7 +5,7 @@ namespace Src\TableGateways;
 # https://alexandrebbarbosa.wordpress.com/2016/03/14/phppersistencia-de-dados-com-design-pattern-table-data-gateway/
 # sse padrão Table Data Gateway provê um meio mais simplificado de manipular uma tabela 
 
-class UsuarioGateway {
+class MatriculadoGateway {
 
     private $db = null;
 
@@ -14,29 +14,32 @@ class UsuarioGateway {
         $this->db = $db;
     }
 
-    public function findAll()
+    public function findAll($params)
     {
-
         try {
 
             $statement = "
-                SELECT 
-                    count(*) as count
-                FROM 
-                    usuario;
-            ";
-
+                    SELECT 
+                        count(*) as count
+                    FROM
+                        matriculado
+                ";
+    
+            // filtros
+            if( $params['$filter'] ){
+                $statement .= " WHERE " . $params['$filter'];
+            }
+            
             $statement = $this->db->query($statement);
             $result = $statement->fetch(\PDO::FETCH_ASSOC);
             $total = $result["count"]; 
-
-            $statement = "
-                SELECT 
-                    *
-                FROM 
-                    usuario;
+ 
+            $statement = " 
+                    SELECT 
+                        *
+                    FROM
+                        matriculado
             ";
-
 
             // filtros
             if( $params['$filter'] ){
@@ -58,6 +61,7 @@ class UsuarioGateway {
                 }
                 $statement .= $params['$top'];
             }
+ 
 
             $statement = $this->db->query($statement);
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -68,14 +72,26 @@ class UsuarioGateway {
     }
 
     public function find($id)
-    { 
+    {
         $statement = "
             SELECT 
-                idusuario, nome, email, sobre
-            FROM
-                usuario
-            WHERE 
-                idusuario = ?;
+                    t.idturma, 
+                    t.descricao,
+                    t.ano,
+                    t.nivel, 
+                    CASE t.nivel 
+                        WHEN 1 THEN '1 - Ensino fundamental' 
+                        WHEN 2 THEN '2 - Ensino médio'
+                    END as NivelDescricao,
+                    t.serie, 
+                    t.turno, 
+                    t.idescola,
+                    e.nome as escola
+                FROM
+                    turma t
+                    INNER JOIN escola e ON e.idescola = t.idescola 
+                WHERE 
+                    t.idturma = ?;
         ";
 
         try {
@@ -88,55 +104,27 @@ class UsuarioGateway {
         }    
     }
 
-
-    public function login(Array $input)
-    {
-        $statement = "
-            SELECT 
-                idusuario, nome, email, sobre
-            FROM
-                usuario
-            WHERE 
-                email = ? AND senha = ?
-        ";
-
-        try {
-            $statement = $this->db->prepare($statement);
-
-            $array = array(
-                $input['email'],
-                $input['senha'
-            ]); 
-
-            $statement->execute( $array ) or die(print_r($statement->errorInfo(), true));
-            $result = $statement->fetch(\PDO::FETCH_ASSOC);
-            return $result;
-
-        } catch (\PDOException $e) {
-            exit($e->getMessage());
-        }    
-    }
-
-
     public function insert(Array $input)
     {
         $statement = "
-            INSERT INTO usuario
-                ( nome, email, senha, sobre, dtcadastro, dtatual )
+            INSERT INTO turma
+                (descricao, ano, nivel, serie, turno, idescola, dtcadastro, dtatual)
             VALUES
-                ( :nome, :email, :senha, :sobre, :dtcadastro, :dtatual );
+                ( :descricao, :ano, :nivel, :serie, :turno, :idescola, :dtcadastro, :dtatual);
         ";
 
         try {
             $statement = $this->db->prepare($statement);
 
             $array = array(
-                'nome'         => $input['nome'],
-                'email'         => $input['email'],
-                'sobre'         => $input['sobre'],
-                'senha'         => $input['senha'],
-                'dtcadastro'    => date("Y-m-d H:i:s"),
-                'dtatual'       => date("Y-m-d H:i:s")
+                'descricao' => $input['serie'] ."º". " série, período " . $input['turno'],
+                'ano'   => (int) $input['ano'], 
+                'nivel' => (int) $input['nivel'],
+                'serie' => (int)  $input['serie'],
+                'turno' => $input['turno'], 
+                'idescola'  => (int) $input['idescola'],
+                'dtcadastro'  => date("Y-m-d H:i:s"),
+                'dtatual'  => date("Y-m-d H:i:s"),
             ); 
 
             $statement->execute( $array ) or die(print_r($statement->errorInfo(), true));
@@ -149,27 +137,32 @@ class UsuarioGateway {
     public function update($id, Array $input)
     {
         $statement = "
-            UPDATE usuario
+            UPDATE turma
             SET 
-                nome = :nome,
-                email = :email,
-                sobre = :sobre,
+                descricao = :descricao,
+                ano = :ano,
+                nivel = :nivel,
+                serie = :serie,
+                turno = :turno,
                 dtatual = :dtatual
             WHERE 
-                idusuario = :idusuario ;
+            idturma = :id;
         ";
 
         try {
+
             $statement = $this->db->prepare($statement);
             $array = array(
-                'idusuario' => $id,
-                'nome'         => $input['nome'],
-                'email'         => $input['email'],
-                'sobre'         => $input['sobre'],
-                'dtatual'       => date("Y-m-d H:i:s")
+                'id' => (int) $id,
+                'descricao' => $input['serie'] ."º". " série, período " . $input['turno'], 
+                'ano' => $input['ano'],
+                'nivel' => $input['nivel'],
+                'serie' => $input['serie'],
+                'turno' => $input['turno'],
+                'dtatual' => date("Y-m-d H:i:s")
             );
-            
-            $statement->execute( $array ) or die(print_r($statement->errorInfo(), true));
+
+            $statement->execute( $array ) or die( print_r( $statement->errorInfo() , true ) );
 
             return $statement->rowCount();
         } catch (\PDOException $e) {
@@ -181,8 +174,8 @@ class UsuarioGateway {
     {
         $statement = "
             DELETE FROM 
-                usuario
-            WHERE idusuario = :id;
+                turma
+            WHERE idturma = :id;
         ";
 
         try {

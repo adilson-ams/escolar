@@ -29,7 +29,7 @@ function MainTurma(props) {
   const { idescola } = props.match.params;
 
 
-  const { data: dataEscola, error } = useFetch('/turmas/' + idescola);
+  const { data: dataEscola } = useFetch('/escolas/' + idescola);
 
   let DataTableRef = useRef();
   const UpdateDataTable = () => DataTableRef.current();
@@ -57,7 +57,7 @@ function MainTurma(props) {
   }
 
   function handleAluno(id) {
-    window.location.href = `/escolas/${idescola}/turmas/${id}/alunos/`;
+    window.location.href = `/escolas/${idescola}/turmas/${id}/matriculados/`;
   }
 
   return (
@@ -91,6 +91,7 @@ function MainTurma(props) {
         DataTableRef={DataTableRef}
         pageSize={10}
         url="turmas"
+        filterFixed={"idescola like " + idescola }
         columns={[
           {
             Header: "#Id",

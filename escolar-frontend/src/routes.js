@@ -34,10 +34,16 @@ const CadastrarTurma = lazy(() => import("./pages/turmas/cadastrar/cadastrar"));
 const EditarTurma = lazy(() => import("./pages/turmas/editar/editar"));
 
 
-/* Alunos *****************************************************  */
+/* Escolas *****************************************************  */
 const MainAluno = lazy(() => import("./pages/alunos/index"));
 const CadastrarAluno = lazy(() => import("./pages/alunos/cadastrar/cadastrar"));
 const EditarAluno = lazy(() => import("./pages/alunos/editar/editar"));
+
+
+/* Alunos *****************************************************  */
+const MainAlunosMatriculados = lazy(() => import("./pages/alunos-matriculados/index"));
+const CadastrarAlunosMatriculados = lazy(() => import("./pages/alunos-matriculados/cadastrar/cadastrar"));
+const EditarAlunosMatriculados = lazy(() => import("./pages/alunos-matriculados/editar/editar"));
 
 
 
@@ -75,7 +81,6 @@ const Routes = () => (
                 <PrivateRoute exact path="/usuarios" component={WaitingComponent(MainUsuario)} />
                 <PrivateRoute path="/usuarios/cadastrar" component={WaitingComponent(CadastrarUsuario)} />
                 <PrivateRoute path="/usuarios/editar/:id" component={WaitingComponent(EditarUsuario)} />
-                {/* <PrivateRoute path='/usuario/alterar-senha/:id' component={WaitingComponent(AlterarSenhaUsuario)} /> */}
 
 
                 {/******* Escolas *********/}
@@ -90,10 +95,16 @@ const Routes = () => (
                 <PrivateRoute path="/escolas/:idescola/turmas/editar/:id" component={WaitingComponent(EditarTurma)} />
 
 
-                {/******* Alunos *********/}
-                <PrivateRoute exact path="/escolas/:idescola/turmas/:idturma/alunos" component={WaitingComponent(MainAluno)} />
-                <PrivateRoute path="/escolas/:idescola/turmas/:idturma/alunos/cadastrar" component={WaitingComponent(CadastrarAluno)} />
-                <PrivateRoute path="/escolas/:idescola/turmas/:idturma/alunos/editar/:id" component={WaitingComponent(EditarAluno)} />
+                {/******* Escolas *********/}
+                <PrivateRoute exact path="/alunos" component={WaitingComponent(MainAluno)} />
+                <PrivateRoute path="/alunos/cadastrar" component={WaitingComponent(CadastrarAluno)} />
+                <PrivateRoute path="/alunos/editar/:id" component={WaitingComponent(EditarAluno)} />
+
+
+                {/******* Alunos Matriculados *********/}
+                <PrivateRoute exact path="/escolas/:idescola/turmas/:idturma/matriculados" component={WaitingComponent(MainAlunosMatriculados)} />
+                <PrivateRoute path="/escolas/:idescola/turmas/:idturma/matriculados/cadastrar" component={WaitingComponent(CadastrarAlunosMatriculados)} />
+                <PrivateRoute path="/escolas/:idescola/turmas/:idturma/matriculados/editar/:id" component={WaitingComponent(EditarAlunosMatriculados)} />
 
 
                 <Route path="*" component={() => <h1>Página não encontrada.</h1>} />

@@ -14,19 +14,53 @@ class EscolaGateway {
         $this->db = $db;
     }
 
-    public function findAll()
+    public function findAll($params)
     {
-        $statement = "
-            SELECT 
-                idescola, nome, logradouro, bairro, numero, cep, cidade, uf, situacao, dtcadastro, dtatual
-            FROM 
-                escola;
-        ";
-
         try {
+                
+            $statement = "
+                SELECT 
+                    count(*) as count
+                FROM 
+                    escola;
+            ";
+    
+            $statement = $this->db->query($statement);
+            $result = $statement->fetch(\PDO::FETCH_ASSOC);
+            $total = $result["count"]; 
+
+            $statement = "
+                SELECT 
+                    idescola, nome, logradouro, bairro, numero, cep, cidade, uf, situacao, dtcadastro, dtatual
+                FROM 
+                    escola;
+            ";
+
+
+            // filtros
+            if( $params['$filter'] ){
+                $statement .= " WHERE " . $params['$filter'];
+            }
+
+            // ordernacao
+            if( $params['$orderby'] ){
+                $statement .= " ORDER BY " . $params['$orderby'];
+            }
+
+            // paginacao
+            if( $params['$top'] ){
+                
+                $statement .= " LIMIT " ;
+                
+                if($params['$skip']){
+                    $statement .= $params['$skip'] . ",";
+                }
+                $statement .= $params['$top'];
+            }
+
             $statement = $this->db->query($statement);
             $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
-            return $result;
+            return array( "values" => $result, "@odata.count" => $total ); 
         } catch (\PDOException $e) {
             exit($e->getMessage());
         }

@@ -38,7 +38,8 @@ export default function DataTableBootstrap(props) {
         "&$skip=" +
         ((page - 1) * pageSize) +
         "&$orderby=" + (_OrderField + " " + _Order) +
-        (filtros ? ("&$filter=" + filtros) : '')
+        (filtros ? ("&$filter=" + filtros)+' ' + (props.filterFixed !== undefined ? props.filterFixed : '' ) : 
+        (props.filterFixed !== undefined ? '&$filter= ' + props.filterFixed : '' ) )
     );
 
 
@@ -74,10 +75,10 @@ export default function DataTableBootstrap(props) {
     function addFilter(type, campo, conteudo) {
         var filtro = "";
 
-        // switch (type) {
-        //     case "eq": filtro = `${campo} eq tolower('${conteudo}')`; break;
-        //     case "contains": filtro = `contains(tolower(${campo}), tolower('${conteudo}'))`; break;
-        // }
+        switch (type) {
+            case "eq": filtro = `'${campo}' = '${conteudo}' `; break;
+            case "contains": filtro = ` LOWER(${campo}) LIKE LOWER('%${conteudo}%')`; break;
+        }
 
         setFiltros(filtro);
     }
@@ -121,7 +122,7 @@ export default function DataTableBootstrap(props) {
                                 }}
                             >
                                 <option value="contains">Contém</option>
-                                <option value="eq">Igual</option>
+                                {/* <option value="eq">Igual</option> */}
                             </select>
                         </div>
                         <div className="form-group">
@@ -129,6 +130,7 @@ export default function DataTableBootstrap(props) {
                             <input
                                 type="text"
                                 name="filtrar"
+                                autoComplete="off"
                                 className="form-control"
                                 placeholder="Filtrar"
                                 onChange={(e) => {
@@ -209,8 +211,6 @@ export default function DataTableBootstrap(props) {
         return (
             <>
 
-
-
                 {filtros &&
                     <div className="alert bg-light" role="alert">
                         <button type="button" onClick={() => {
@@ -260,7 +260,7 @@ export default function DataTableBootstrap(props) {
                     {/*****************  Fim - Header *****************/}
 
                     {/*****************  Body *****************/}
-                    <DataTableBody columns={props.columns} data={data} />
+                    <DataTableBody columns={props.columns} data={data !== undefined ? data.values : ''} />
 
 
                     {/*****************  Fim - Body *****************/}

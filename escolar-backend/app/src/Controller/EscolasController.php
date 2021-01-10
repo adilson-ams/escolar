@@ -63,7 +63,7 @@ class EscolasController {
     # GET
     private function getAll()
     {
-        $result = $this->EscolaGateway->findAll();
+        $result = $this->EscolaGateway->findAll($_GET);
 
         // retorna todos os resultados #200 - OK response
         return $this->responseResult->okResponse( json_encode( $result ) ); 

@@ -16,6 +16,7 @@ $routes["usuarios"] = 'Usuarios';
 $routes["escolas"] = 'Escolas';
 $routes["alunos"] = 'Alunos';
 $routes["turmas"] = 'Turmas';
+$routes["matriculados"] = 'Matriculados';
 
 
 function base64UrlEncode($text)

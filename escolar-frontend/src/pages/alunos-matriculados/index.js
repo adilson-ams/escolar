@@ -21,17 +21,23 @@ import { useFetch } from "./../../hooks/useFetch";
 
 import api from "../../services/api";
 
-function MainAluno(props) {
+function MainAlunosMatriculados(props) {
 
 
-  const { addToast } = useToasts(); 
+  const { addToast } = useToasts();
+  const { idescola, idturma } = props.match.params;
+
+
+  const { data: dataTurma } = useFetch('/turmas/' + idturma);
+  const { data: dataEscola } = useFetch('/escolas/' + idescola);
+
   let DataTableRef = useRef();
   const UpdateDataTable = () => DataTableRef.current();
 
 
   // Ações de botão
   function handleDelete(id, name) {
-    api.delete('/alunos/' + id, { responseType: 'json' })
+    api.delete('/matriculados/' + id, { responseType: 'json' })
       .then(response => {
 
         if (response.data.status) {
@@ -48,19 +54,45 @@ function MainAluno(props) {
   }
 
   function handleEdit(id) {
-    window.location.href = `/alunos/editar/` + id;
+    window.location.href = `/escolas/${idescola}/turmas/${idturma}/matriculados/editar/` + id;
   }
 
 
   return (
     <>
-      <br /> 
+      <br />
+      <nav aria-label="breadcrumb">
+        <ol className="breadcrumb">
+          <li className="breadcrumb-item">
+            <Link to={"/escolas/"} >
+              Escolas
+            </Link>
+          </li>
+          <li className="breadcrumb-item">
+            <Link to={`/escolas/editar/${idescola}`} >
+              {dataEscola !== undefined ? dataEscola.nome : ''}
+            </Link>
+          </li>
+          <li className="breadcrumb-item">
+            <Link to={`/escolas/${idescola}/turmas`} >
+              Turmas
+              </Link>
+          </li>
+          <li className="breadcrumb-item">
+            <Link to={`/escolas/${idescola}/turmas/editar/${idturma}`} >
+              {dataTurma !== undefined ? dataTurma.descricao : ''}
+            </Link>
+          </li>
+          <li className="breadcrumb-item active" aria-current="page">Matriculados</li>
+        </ol>
+      </nav>
+
 
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span><h1 className="mt-4">Alunos</h1></span>
+        <span><h1 className="mt-4">Alunos Matriculados</h1></span>
         <span style={{ paddingTop: 40 }} >
-          <Link to={`/alunos/cadastrar`} className="btn btn-primary">
-            <BsFileEarmarkPlus /> Novo Aluno
+          <Link to={`/escolas/${idescola}/turmas/${idturma}/matriculados/cadastrar`} className="btn btn-primary">
+            <BsFileEarmarkPlus /> Matricular Novo Aluno
           </Link>
         </span>
       </div>
@@ -68,7 +100,7 @@ function MainAluno(props) {
       <DataTableBootstrap
         DataTableRef={DataTableRef}
         pageSize={10}
-        url="alunos"
+        url="matriculados"
         columns={[
           {
             Header: "#Id",
@@ -130,4 +162,4 @@ function MainAluno(props) {
   );
 }
 
-export default MainAluno;
+export default MainAlunosMatriculados;

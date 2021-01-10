@@ -1,9 +1,8 @@
 <?php
+
 namespace Src\TableGateways;
 
-
-# https://alexandrebbarbosa.wordpress.com/2016/03/14/phppersistencia-de-dados-com-design-pattern-table-data-gateway/
-# sse padrão Table Data Gateway provê um meio mais simplificado de manipular uma tabela 
+use Src\Helpers\Paginator;
 
 class AlunoGateway {
 
@@ -14,22 +13,57 @@ class AlunoGateway {
         $this->db = $db;
     }
 
-    public function findAll()
+    public function findAll($params)
     {
+
         $statement = "
             SELECT 
-                idaluno, nome, telefone, email, dtnascimento, genero, dtcadastro, dtatual
+                count(*) as count
             FROM 
                 aluno;
         ";
-
-        try {
-            $statement = $this->db->query($statement);
-            $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
-            return $result;
-        } catch (\PDOException $e) {
-            exit($e->getMessage());
+ 
+        // filtros
+        if( $params['$filter'] ){
+            $statement .= " WHERE " . $params['$filter'];
         }
+        
+         $statement = $this->db->query($statement);
+         $result = $statement->fetch(\PDO::FETCH_ASSOC);
+         $total = $result["count"]; 
+   
+         $statement = "
+            SELECT 
+                idaluno, nome, telefone, email, dtnascimento, genero, dtcadastro, dtatual
+            FROM 
+                aluno
+        ";
+
+        // filtros
+        if( $params['$filter'] ){
+            $statement .= " WHERE " . $params['$filter'];
+        }
+
+        // ordernacao
+        if( $params['$orderby'] ){
+            $statement .= " ORDER BY " . $params['$orderby'];
+        }
+
+        // paginacao
+        if( $params['$top'] ){
+            
+            $statement .= " LIMIT " ;
+            
+            if($params['$skip']){
+                $statement .= $params['$skip'] . ",";
+            }
+            $statement .= $params['$top'];
+        }
+
+ 
+         $statement = $this->db->query($statement);
+         $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+         return array( "values" => $result, "@odata.count" => $total ); 
     }
 
     public function find($id)

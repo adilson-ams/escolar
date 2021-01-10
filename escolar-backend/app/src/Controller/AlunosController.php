@@ -62,7 +62,7 @@ class AlunosController {
     # GET
     private function getAll()
     {
-        $result = $this->AlunoGateway->findAll();
+        $result = $this->AlunoGateway->findAll($_GET);
 
         // retorna todos os resultados #200 - OK response
         return $this->responseResult->okResponse( json_encode( $result ) ); 

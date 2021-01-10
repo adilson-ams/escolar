@@ -63,7 +63,7 @@ class TurmasController {
     # GET
     private function getAll()
     {
-        $result = $this->TurmaGateway->findAll();
+        $result = $this->TurmaGateway->findAll($_GET);
 
         // retorna todos os resultados #200 - OK response
         return $this->responseResult->okResponse( json_encode( $result ) ); 

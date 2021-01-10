@@ -33,7 +33,7 @@ export default function LayoutAdmin(props) {
             <div className={isOpen ? 'd-flex toggled' : 'd-flex'} id="wrapper">
                 <div className="border-right bg-secondary" id="sidebar-wrapper">
 
-                    <div className="sidebar-heading">Start Bootstrap </div>
+                    <div className="sidebar-heading">Controle de Alunos </div>
 
 
                     <div className="list-group list-group-flush ">
@@ -45,9 +45,9 @@ export default function LayoutAdmin(props) {
                             Escolas
                         </Link>
 
-                        {/* <Link to="/Trumas" className={(window.location.pathname === '/artistas' ? 'list-group-item active' : 'list-group-item ')}>
-                            Artistas
-                        </Link> */}
+                        <Link to="/alunos" className={(window.location.pathname === '/alunos' ? 'list-group-item active' : 'list-group-item ')}>
+                            Alunos
+                        </Link>
 
                         <Link to="/usuarios" className={(window.location.pathname === '/usuarios' ? 'list-group-item active' : 'list-group-item ')}>
                             Usuários
