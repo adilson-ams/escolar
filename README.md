@@ -14,11 +14,15 @@ As tecnologias utilizadas foram:
 
 ### Instalação
 
-A instalação é divida em 3 fases. Start do banco de dados. 
+A instalação é divida em 3 fases. Start do banco de dados, start do projeto backend em php, e start da aplicação frontend em react js. 
+
+Em nosso caso é utlizado a containerização via docker, porém pode ser utilizado com a instalação nativa.
 
 
-##### Banco de dados
-Em nosso projeto é utlizado a containerização via docker, porém pode ser utilizado com a instação nativa do usuário.
+#### Banco de dados Mysql:
+
+Com as ferramentas *docker* e *docker-compose* instaladas, execute o seguinte comando no diretório principal do projeto onde se encontra o arquivo *docker-compose.yml*:
+
 
 Instalação via docker:
 
