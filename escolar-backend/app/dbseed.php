@@ -2,85 +2,70 @@
 require 'bootstrap.php';
 
 $statement = <<<EOS
-    CREATE TABLE IF NOT EXISTS person (
-        id INT NOT NULL AUTO_INCREMENT,
-        firstname VARCHAR(100) NOT NULL,
-        lastname VARCHAR(100) NOT NULL,
-        firstparent_id INT DEFAULT NULL,
-        secondparent_id INT DEFAULT NULL,
-        PRIMARY KEY (id),
-        FOREIGN KEY (firstparent_id)
-            REFERENCES person(id)
-            ON DELETE SET NULL,
-        FOREIGN KEY (secondparent_id)
-            REFERENCES person(id)
-            ON DELETE SET NULL
-    ) ENGINE=INNODB;
-
-    INSERT INTO person
-        (id, firstname, lastname, firstparent_id, secondparent_id)
-    VALUES
-        (1, 'Krasimir', 'Hristozov', null, null),
-        (2, 'Maria', 'Hristozova', null, null),
-        (3, 'Masha', 'Hristozova', 1, 2),
-        (4, 'Jane', 'Smith', null, null),
-        (5, 'John', 'Smith', null, null),
-        (6, 'Richard', 'Smith', 4, 5),
-        (7, 'Donna', 'Smith', 4, 5),
-        (8, 'Josh', 'Harrelson', null, null),
-        (9, 'Anna', 'Harrelson', 7, 8);
-
-
-    CREATE TABLE aluno (
-        id INT auto_increment NOT NULL,
-        nome varchar(100) NOT NULL,
-        telefone varchar(11) NULL,
-        email varchar(150) NOT NULL,
-        dtnascimento DATE NULL,
-        genero varchar(50) NULL,
-        PRIMARY KEY (id)
-     )
-    ENGINE=InnoDB
-
-
-    CREATE TABLE escola (
-        id INT auto_increment NOT NULL,
-        nome varchar(100) NOT NULL,
-        logradouro varchar(150) NULL,
-        bairro varchar(150) NULL,
-        numero varchar(11) NULL,
-        cep varchar(11) NULL,
-        cidade varchar(150) NULL,
-        uf  char(1) NULL,
-        situacao int NOT NULL
-        dtcadastro DATE NULL,
-        dtatual varchar(50) NULL,
-        PRIMARY KEY (id)
-     )
-    ENGINE=InnoDB
-
     
-    CREATE TABLE turma (
-        id INT auto_increment NOT NULL,
-        descricao varchar(150) NULL, 
-        ano int NOT NULL, 
-        nivel int NOT NULL COMMENT '1 - Fundamental, 2 - Médio',
-        serie int NOT NULL,
-        turno varchar(11) NOT NULL COMMENT '1 - Manutino, 2 - Vespertino',
-        PRIMARY KEY (id)
-     )
-    ENGINE=InnoDB
+    CREATE DATABASE `dbescolar`;
 
-    
-    CREATE TABLE usuario (
-        idusuario INT auto_increment NOT NULL,
-        email varchar(100) NULL,
-        senha varchar(255) NULL,
-        dtcadastro DATETIME NOT NULL,
-        dtatual DATETIME NOT NULL,
-        PRIMARY KEY (idusuario)
-    )
-    ENGINE=InnoDB
+    CREATE TABLE `aluno` (
+        `idaluno` int(11) NOT NULL AUTO_INCREMENT,
+        `nome` varchar(100) NOT NULL,
+        `telefone` varchar(12) DEFAULT NULL,
+        `email` varchar(150) NOT NULL,
+        `dtnascimento` date DEFAULT NULL,
+        `genero` varchar(50) DEFAULT NULL,
+        `dtcadastro` datetime NOT NULL,
+        `dtatual` datetime NOT NULL,
+        PRIMARY KEY (`idaluno`)
+      ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=latin1;
+
+      CREATE TABLE `escola` (
+        `idescola` int(11) NOT NULL AUTO_INCREMENT,
+        `nome` varchar(100) NOT NULL,
+        `logradouro` varchar(150) DEFAULT NULL,
+        `bairro` varchar(150) DEFAULT NULL,
+        `numero` varchar(11) DEFAULT NULL,
+        `cep` varchar(11) DEFAULT NULL,
+        `cidade` varchar(150) DEFAULT NULL,
+        `uf` char(2) DEFAULT NULL,
+        `situacao` int(11) NOT NULL,
+        `dtcadastro` datetime NOT NULL,
+        `dtatual` datetime NOT NULL,
+        PRIMARY KEY (`idescola`)
+      ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+
+      CREATE TABLE `matriculado` (
+        `idmatriculado` int(11) NOT NULL AUTO_INCREMENT,
+        `idaluno` int(11) NOT NULL,
+        `idturma` int(11) NOT NULL,
+        PRIMARY KEY (`idmatriculado`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+      CREATE TABLE `turma` (
+        `idturma` int(11) NOT NULL AUTO_INCREMENT,
+        `descricao` varchar(150) DEFAULT NULL,
+        `ano` int(11) NOT NULL,
+        `nivel` int(11) NOT NULL COMMENT '1 - Fundamental, 2 - Médio',
+        `serie` int(11) NOT NULL,
+        `turno` int(11) NOT NULL COMMENT '1 - Manutino, 2 - Vespertino',
+        `idescola` int(11) DEFAULT NULL,
+        `dtcadastro` datetime NOT NULL,
+        `dtatual` datetime NOT NULL,
+        PRIMARY KEY (`idturma`),
+        KEY `turma_FK` (`idescola`),
+        CONSTRAINT `turma_FK` FOREIGN KEY (`idescola`) REFERENCES `escola` (`idescola`)
+      ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+
+
+      CREATE TABLE `usuario` (
+        `idusuario` int(11) NOT NULL AUTO_INCREMENT,
+        `email` varchar(100) DEFAULT NULL,
+        `senha` varchar(255) DEFAULT NULL,
+        `dtcadastro` datetime NOT NULL,
+        `dtatual` datetime NOT NULL,
+        `nome` varchar(100) NOT NULL,
+        `sobre` text,
+        PRIMARY KEY (`idusuario`)
+      ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+      
     
         
 

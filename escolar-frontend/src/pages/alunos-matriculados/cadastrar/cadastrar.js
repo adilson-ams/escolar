@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useFetch } from "react";
 import Moment from 'moment';
 import { useHistory } from "react-router-dom";
 import {
@@ -11,7 +11,6 @@ import { RiArrowGoBackLine } from "react-icons/ri";
 import { Form } from '@unform/web';
 
 import * as Yup from 'yup';
-import Input from './../../../components/form/input/input';
 import Select from './../../../components/form/select/select';
 
 
@@ -31,18 +30,14 @@ import { useToasts } from 'react-toast-notifications';
 
 const initialData = {
 }
-
-const generos = [
-    { value: '1', descricao: "Masculino" },
-    { value: '2', descricao: "Feminino" },
-    { value: '3', descricao: "Transsexual" }
-]
+ 
 
 function CadastrarAlunosMatriculados(props) {
 
     let history = useHistory();
     const { addToast } = useToasts();
     const formRef = useRef(null);
+ 
 
     const { idescola, idturma } = props.match.params;
 
@@ -81,7 +76,7 @@ function CadastrarAlunosMatriculados(props) {
             }
         }
     }
- 
+
 
     return (
         <div className="content" style={{ marginTop: 15 }}>
@@ -109,17 +104,17 @@ function CadastrarAlunosMatriculados(props) {
                                                     <div className="row">
                                                         <div className="col">
                                                             <div className="form-group">
-                                                                <Input
+                                                                <Select
                                                                     obrigatorio
-                                                                    type="text"
-                                                                    label="Nome"
-                                                                    name="nome"
-                                                                    placeholder="Nome do Aluno"
-                                                                />
+                                                                    label="Aluno"
+                                                                    className="form-control"
+                                                                    name="aluno" 
+                                                                    >
+                                                                </Select>
                                                             </div>
-                                                        </div> 
+                                                        </div>
                                                     </div>
- 
+
                                                 </div>
                                             </div>
                                         </div>

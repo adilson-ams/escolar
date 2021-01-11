@@ -28,7 +28,7 @@ class TurmasController {
         switch ($this->requestMethod) {
 
             
-            # caso seja informado um identificador, é chamada a action que retorna dados da pessoa por id
+            # caso seja informado um identificador, é chamada a action que retorna dados da turma por id
             # caso contrário, serão listados todos os registros
             case 'GET':
                 if ($this->userId) {
@@ -70,7 +70,7 @@ class TurmasController {
     }
 
 
-    # busca pessoa específica, de acordo com o id
+    # busca turma específica, de acordo com o id
     # GET
     private function getById($id)
     {
@@ -132,7 +132,7 @@ class TurmasController {
         }
 
 
-        // Busca pessoa no banco de dados
+        // Busca turma no banco de dados
         $result = $this->TurmaGateway->find($id);
 
         // caso não seja encontrado, retorna mensagem.
@@ -148,7 +148,7 @@ class TurmasController {
         if ( !$this->validateTurmaUpdate($input)) {
             $message = json_encode([
                 'status' => false,
-                'message' => "Exitem campos obrigatórios para alterar esta pessoa que não foram informados."
+                'message' => "Exitem campos obrigatórios para alterar esta turma que não foram informados."
             ]);
             return $this->responseResult->unprocessableEntityResponse( $message );
         }
@@ -159,7 +159,7 @@ class TurmasController {
         // retorna sucesso e registros alterados
         $response = json_encode([
             'status' => true,
-            'message' => 'Registro de Pessoa alterado com sucesso.',
+            'message' => 'Registro de Turma alterado com sucesso.',
             "result" => $result
         ]);
         return $this->responseResult->okResponse( $response );
@@ -172,7 +172,7 @@ class TurmasController {
         if (! $result) {
             $message = json_encode([
                 'status' => false,
-                'message' => 'Impossível excluir registro. Pessoa não encontrada.'
+                'message' => 'Impossível excluir registro. Turma não encontrada.'
             ]);
             return $this->responseResult->notFoundResponse($message);
         }
@@ -182,7 +182,7 @@ class TurmasController {
         // retorna mensagem de sucesso ap excluir registro.
         $response = json_encode([
             'status' => true,
-            'message' => 'Registro de Pessoa excluído com sucesso.'
+            'message' => 'Registro de Turma excluído com sucesso.'
         ]);
         return $this->responseResult->okResponse( $response );
     }
